@@ -12,9 +12,14 @@ func main() {
 	var port string
 	var url string
 	if len(os.Args) < 3 {
-		port = "80"
+		//default port is port 80
+		//using port = ":80" in the origin can break the handshake
+		//give Bad Origin.
+		port = ""
 	} else {
-		port = os.Args[2]
+		//add : here for simple appending of variable
+		//can append empty string for default port now.
+		port = ":"+os.Args[2]
 	}
 	if len(os.Args) < 2 {
 		url = "onelyfe.herokuapp.com"
@@ -23,7 +28,7 @@ func main() {
 	}
 
 //Look into WebSocket Keys, not sure using the same one every time is good.
-	resp, err := http.Get("http://"+url+":"+port)
+	resp, err := http.Get("http://"+url+port)
 	if err != nil {
 		panic(err)
 	}
@@ -37,7 +42,7 @@ func main() {
 	resp.Header.Add("Cache-Control","no-cache")
 	resp.Header.Add("Connection","Upgrade")
 	resp.Header.Add("Host",url)
-	resp.Header.Add("Origin","http://"+url)//+":"+port)
+	resp.Header.Add("Origin","http://"+url+port)
 	resp.Header.Add("Pragma","no-cache")
 	resp.Header.Add("Sec-WebSocket-Extensions","permessage-deflate; client_max_window_bits, x-webkit-deflate-frame")
 	resp.Header.Add("Sec-WebSocket-Key","z1VdBz6K3WZTV3rMw2QUFw==")
@@ -62,7 +67,7 @@ func main() {
 
 //middle argument is response header.
 	var DefaultDialer *websocket.Dialer
-	conn, resp,err := DefaultDialer.Dial("ws://"+url+":" + port + "/ws",resp.Header)
+	conn, resp,err := DefaultDialer.Dial("ws://"+url+port + "/ws",resp.Header)
 	for i := range resp.Header {
 		fmt.Println(i+":"+resp.Header[i][0])
 	}

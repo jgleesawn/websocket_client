@@ -24,20 +24,36 @@ func main() {
 
 //Look into WebSocket Keys, not sure using the same one every time is good.
 	resp, err := http.Get("http://"+url+":"+port)
+	if err != nil {
+		panic(err)
+	}
 	for i := range resp.Header {
 		fmt.Println(i+":"+resp.Header[i][0])
 	}
 	fmt.Println()
-	if err != nil {
-		panic(err)
+	for i := range resp.Header {
+		resp.Header.Del(i)
 	}
+	resp.Header.Add("Cache-Control","no-cache")
+	resp.Header.Add("Connection","Upgrade")
+	resp.Header.Add("Host",url)
+	resp.Header.Add("Origin","http://"+url)//+":"+port)
+	resp.Header.Add("Pragma","no-cache")
+	resp.Header.Add("Sec-WebSocket-Extensions","permessage-deflate; client_max_window_bits, x-webkit-deflate-frame")
+	resp.Header.Add("Sec-WebSocket-Key","z1VdBz6K3WZTV3rMw2QUFw==")
+	resp.Header.Add("Sec-WebSocket-Version","13")
+	resp.Header.Add("Upgrade","websocket")
+	resp.Header.Add("User-Agent","Mozilla/5.0")
+
+	/*
 	resp.Header.Add("Host",url)
 	resp.Header.Add("Upgrade","websocket")
 	resp.Header.Add("Connection","Upgrade")
 	resp.Header.Add("Sec-WebSocket-Key","x3JJHMbDL1EzLkh9GBhXDw==")
 	resp.Header.Add("Sec-WebSocket-Protocol","chat, superchat")
 	resp.Header.Add("Sec-WebScoket-Version","13")
-	resp.Header.Add("Origin","http://"+url+":"+port+"/ws")
+	//resp.Header.Add("Origin","http://"+url+":"+port)
+	*/
 	for i := range resp.Header {
 		fmt.Println(i+":"+resp.Header[i][0])
 	}

@@ -128,7 +128,7 @@ func main() {
 		q = &Quest{0,"Test","Testing Function","Test",false,0,[]int{0},[]string{""}}
 		addQuest(conn,q)
 		var u *User
-		u = &User{"test","test","test",100,[]int{0},[]string{""}}
+		u = &User{"testing_username","test","test",100,[]int{0},[]string{""}}
 		addUser(conn,u)
 		q.Name = "update"
 		updateQuest(conn,q)

@@ -6,7 +6,50 @@ import (
 	"os"
 	"bufio"
 	"github.com/gorilla/websocket"
+
+//	"io"
+	"encoding/json"
+	"strings"
 )
+
+type Quest struct {
+	Questid		int
+	Name		string
+	Description	string
+	Category	string
+	Recurring	bool
+	Xpvalue		int
+	Requiredquests	[]int
+	Attributes	[]string
+}
+func (quest Quest) New(qid int, name string, desc string, cat string, rec bool, xpval int, reqquests []int, attr []string) {
+	quest.Questid = qid
+	quest.Name= name
+	quest.Description = desc
+	quest.Category = cat
+	quest.Recurring = rec
+	quest.Xpvalue = xpval
+	quest.Requiredquests = reqquests
+	quest.Attributes = attr
+}
+
+type User struct {
+	Username	string	`db:"Username"`
+	Firstname	string	`db:"Firstname"`
+	Lastname	string	`db:"Lastname"`
+	Xp		int	`db:"Xp"`
+	Completedquests	[]int	`db:"Completedquests"`
+	Attributes	[]string `db:"Attributes"`
+}
+func (user User) New(u string,f string, l string, a []string) {
+	user.Username = u
+	user.Firstname = f
+	user.Lastname = l
+	user.Xp = 0
+	user.Completedquests = make([]int,0)
+	user.Attributes = a
+}
+
 
 func main() {
 	var port string
@@ -39,15 +82,16 @@ func main() {
 	for i := range resp.Header {
 		resp.Header.Del(i)
 	}
-	resp.Header.Add("Cache-Control","no-cache")
+	resp.Header.Add("Upgrade","websocket")
 	resp.Header.Add("Connection","Upgrade")
 	resp.Header.Add("Host",url)
 	resp.Header.Add("Origin","http://"+url+port)
-	resp.Header.Add("Pragma","no-cache")
+	resp.Header.Add("Sec-WebSocket-Protocol","chat, superchat")
 	resp.Header.Add("Sec-WebSocket-Extensions","permessage-deflate; client_max_window_bits, x-webkit-deflate-frame")
 	resp.Header.Add("Sec-WebSocket-Key","z1VdBz6K3WZTV3rMw2QUFw==")
 	resp.Header.Add("Sec-WebSocket-Version","13")
-	resp.Header.Add("Upgrade","websocket")
+	resp.Header.Add("Cache-Control","no-cache")
+	resp.Header.Add("Pragma","no-cache")
 	resp.Header.Add("User-Agent","Mozilla/5.0")
 
 	/*
@@ -80,6 +124,13 @@ func main() {
 
 	reader := bufio.NewReader(os.Stdin)
 	for {
+		var q *Quest
+		q = &Quest{0,"Test","Testing Function","Test",false,0,[]int{0},[]string{}}
+		addQuest(conn,q)
+		var u *User
+		u = &User{"test","test","test",100,[]int{0},[]string{""}}
+		addUser(conn,u)
+
 		line, err := reader.ReadString('\n')
 		if err != nil {
 			panic(err)
@@ -89,6 +140,24 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+	}
+}
+func addQuest(conn *websocket.Conn, q *Quest){
+	data,err := json.Marshal(q)
+	mt := websocket.TextMessage
+	sep := []string{"add Quest",string(data)}
+	err = conn.WriteMessage(mt,[]byte(strings.Join(sep,";")))
+	if err != nil {
+		fmt.Println("Sending Message failed.")
+	}
+}
+func addUser(conn *websocket.Conn, u *User){
+	data,err := json.Marshal(u)
+	mt := websocket.TextMessage
+	sep := []string{"add User",string(data)}
+	err = conn.WriteMessage(mt,[]byte(strings.Join(sep,";")))
+	if err != nil {
+		fmt.Println("Sending Message failed.")
 	}
 }
 

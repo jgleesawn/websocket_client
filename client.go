@@ -125,11 +125,15 @@ func main() {
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		var q *Quest
-		q = &Quest{0,"Test","Testing Function","Test",false,0,[]int{0},[]string{}}
+		q = &Quest{0,"Test","Testing Function","Test",false,0,[]int{0},[]string{""}}
 		addQuest(conn,q)
 		var u *User
 		u = &User{"test","test","test",100,[]int{0},[]string{""}}
 		addUser(conn,u)
+		q.Name = "update"
+		updateQuest(conn,q)
+		u.Firstname = "update"
+		updateUser(conn,u)
 
 		line, err := reader.ReadString('\n')
 		if err != nil {
@@ -155,6 +159,24 @@ func addUser(conn *websocket.Conn, u *User){
 	data,err := json.Marshal(u)
 	mt := websocket.TextMessage
 	sep := []string{"add User",string(data)}
+	err = conn.WriteMessage(mt,[]byte(strings.Join(sep,";")))
+	if err != nil {
+		fmt.Println("Sending Message failed.")
+	}
+}
+func updateQuest(conn *websocket.Conn, q *Quest){
+	data,err := json.Marshal(q)
+	mt := websocket.TextMessage
+	sep := []string{"update Quest",string(data)}
+	err = conn.WriteMessage(mt,[]byte(strings.Join(sep,";")))
+	if err != nil {
+		fmt.Println("Sending Message failed.")
+	}
+}
+func updateUser(conn *websocket.Conn, u *User){
+	data,err := json.Marshal(u)
+	mt := websocket.TextMessage
+	sep := []string{"update User",string(data)}
 	err = conn.WriteMessage(mt,[]byte(strings.Join(sep,";")))
 	if err != nil {
 		fmt.Println("Sending Message failed.")

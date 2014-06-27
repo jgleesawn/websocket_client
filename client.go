@@ -6,6 +6,7 @@ import (
 	"os"
 	"bufio"
 	"github.com/gorilla/websocket"
+	"ECC_Conn"
 
 //	"io"
 	"encoding/json"
@@ -119,6 +120,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	var dh_conn ECC_Conn.ECC_Conn
+	dh_conn.Connect(conn)
+	dh_conn.Write([]byte(strings.Repeat("Test",8)))
+	buf := make([]byte,1024)
+	dh_conn.Read(buf)
+	fmt.Println(string(buf))
+	fmt.Println("Outside diffie.")
 
 	go process(conn)
 
@@ -142,7 +150,8 @@ func main() {
 		str := []byte(line[0:len(line)-1])
 		err = conn.WriteMessage(websocket.TextMessage,str)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 	}
 }
@@ -194,7 +203,8 @@ func process(conn *websocket.Conn) {
 			}
 		}
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 	}
 }

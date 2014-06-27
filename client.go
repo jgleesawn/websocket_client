@@ -74,7 +74,8 @@ func main() {
 //Look into WebSocket Keys, not sure using the same one every time is good.
 	resp, err := http.Get("http://"+url+port)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return
 	}
 	for i := range resp.Header {
 		fmt.Println(i+":"+resp.Header[i][0])
@@ -120,28 +121,27 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	var dh_conn ECC_Conn.ECC_Conn
+	dh_conn := new(ECC_Conn.ECC_Conn)
 	dh_conn.Connect(conn)
-	dh_conn.Write([]byte(strings.Repeat("Test",8)))
-	buf := make([]byte,1024)
-	dh_conn.Read(buf)
-	fmt.Println(string(buf))
 	fmt.Println("Outside diffie.")
+	buf := make([]byte,dh_conn.PacketSize)
+	n,_ := dh_conn.Read(buf)
+	fmt.Println(string(buf[:n]))
 
-	go process(conn)
+	go process(dh_conn)
 
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		var q *Quest
 		q = &Quest{0,"Test","Testing Function","Test",false,0,[]int{0},[]string{""}}
-		addQuest(conn,q)
+		addQuest(dh_conn,q)
 		var u *User
 		u = &User{"testing_username","test","test",100,[]int{0},[]string{""}}
-		addUser(conn,u)
+		addUser(dh_conn,u)
 		q.Name = "update"
-		updateQuest(conn,q)
+		updateQuest(dh_conn,q)
 		u.Firstname = "update"
-		updateUser(conn,u)
+		updateUser(dh_conn,u)
 
 		line, err := reader.ReadString('\n')
 		if err != nil {
@@ -155,52 +155,49 @@ func main() {
 		}
 	}
 }
-func addQuest(conn *websocket.Conn, q *Quest){
+func addQuest(conn *ECC_Conn.ECC_Conn, q *Quest){
 	data,err := json.Marshal(q)
-	mt := websocket.TextMessage
 	sep := []string{"add Quest",string(data)}
-	err = conn.WriteMessage(mt,[]byte(strings.Join(sep,";")))
+	jn := []byte(strings.Join(sep,";"))
+	_,err = conn.Write(jn)
 	if err != nil {
 		fmt.Println("Sending Message failed.")
 	}
 }
-func addUser(conn *websocket.Conn, u *User){
+func addUser(conn *ECC_Conn.ECC_Conn, u *User){
 	data,err := json.Marshal(u)
-	mt := websocket.TextMessage
 	sep := []string{"add User",string(data)}
-	err = conn.WriteMessage(mt,[]byte(strings.Join(sep,";")))
+	jn := []byte(strings.Join(sep,";"))
+	_,err = conn.Write(jn)
 	if err != nil {
 		fmt.Println("Sending Message failed.")
 	}
 }
-func updateQuest(conn *websocket.Conn, q *Quest){
+func updateQuest(conn *ECC_Conn.ECC_Conn, q *Quest){
 	data,err := json.Marshal(q)
-	mt := websocket.TextMessage
 	sep := []string{"update Quest",string(data)}
-	err = conn.WriteMessage(mt,[]byte(strings.Join(sep,";")))
+	jn := []byte(strings.Join(sep,";"))
+	_,err = conn.Write(jn)
 	if err != nil {
 		fmt.Println("Sending Message failed.")
 	}
 }
-func updateUser(conn *websocket.Conn, u *User){
+func updateUser(conn *ECC_Conn.ECC_Conn, u *User){
 	data,err := json.Marshal(u)
-	mt := websocket.TextMessage
 	sep := []string{"update User",string(data)}
-	err = conn.WriteMessage(mt,[]byte(strings.Join(sep,";")))
+	jn := []byte(strings.Join(sep,";"))
+	_,err = conn.Write(jn)
 	if err != nil {
 		fmt.Println("Sending Message failed.")
 	}
 }
 
-func process(conn *websocket.Conn) {
+func process(conn *ECC_Conn.ECC_Conn) {
+	data := make([]byte,conn.PacketSize)
 	for {
-		mt,data,err := conn.ReadMessage()
-		if len(data) > 0 {
-			if mt == websocket.TextMessage{
-				fmt.Println(string(data))
-			} else {
-				fmt.Println(data)
-			}
+		n,err := conn.Read(data)
+		if n > 0 {
+			fmt.Println(string(data[:n]))
 		}
 		if err != nil {
 			fmt.Println(err)

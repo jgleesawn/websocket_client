@@ -6,7 +6,7 @@ import (
 	"os"
 	"bufio"
 	"github.com/gorilla/websocket"
-	"ECC_Conn"
+	"github.com/jgleesawn/ECC_Conn"
 
 //	"io"
 	"encoding/json"

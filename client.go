@@ -11,6 +11,7 @@ import (
 //	"io"
 	"encoding/json"
 	"strings"
+	"strconv"
 )
 
 type Quest struct {
@@ -141,7 +142,11 @@ func main() {
 		q.Name = "update"
 		updateQuest(dh_conn,q)
 		u.Firstname = "update"
+		u.Completedquests = []int{3000,200,0}
 		updateUser(dh_conn,u)
+		
+		
+		getQuest(dh_conn,0)
 
 		line, err := reader.ReadString('\n')
 		if err != nil {
@@ -187,6 +192,22 @@ func updateUser(conn *ECC_Conn.ECC_Conn, u *User){
 	sep := []string{"update User",string(data)}
 	jn := []byte(strings.Join(sep,";"))
 	_,err = conn.Write(jn)
+	if err != nil {
+		fmt.Println("Sending Message failed.")
+	}
+}
+func getUser(conn *ECC_Conn.ECC_Conn, username string) {
+	sep := []string{"get User",username}
+	jn := []byte(strings.Join(sep,";"))
+	_,err := conn.Write(jn)
+	if err != nil {
+		fmt.Println("Sending Message failed.")
+	}
+}
+func getQuest(conn *ECC_Conn.ECC_Conn, qid int64) {
+	sep := []string{"get Quest",strconv.FormatInt(qid,10)}
+	jn := []byte(strings.Join(sep,";"))
+	_,err := conn.Write(jn)
 	if err != nil {
 		fmt.Println("Sending Message failed.")
 	}

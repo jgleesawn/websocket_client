@@ -144,6 +144,8 @@ func main() {
 		u.Firstname = "update"
 		u.Completedquests = []int{3000,200,0}
 		updateUser(dh_conn,u)
+		getallUsers(dh_conn)
+		getallQuests(dh_conn)
 		
 		
 		getQuest(dh_conn,0)
@@ -206,6 +208,22 @@ func getUser(conn *ECC_Conn.ECC_Conn, username string) {
 }
 func getQuest(conn *ECC_Conn.ECC_Conn, qid int64) {
 	sep := []string{"get Quest",strconv.FormatInt(qid,10)}
+	jn := []byte(strings.Join(sep,";"))
+	_,err := conn.Write(jn)
+	if err != nil {
+		fmt.Println("Sending Message failed.")
+	}
+}
+func getallUsers(conn *ECC_Conn.ECC_Conn) {
+	sep := []string{"get all Users","a"}
+	jn := []byte(strings.Join(sep,";"))
+	_,err := conn.Write(jn)
+	if err != nil {
+		fmt.Println("Sending Message failed.")
+	}
+}
+func getallQuests(conn *ECC_Conn.ECC_Conn) {
+	sep := []string{"get all Quests","a"}
 	jn := []byte(strings.Join(sep,";"))
 	_,err := conn.Write(jn)
 	if err != nil {
